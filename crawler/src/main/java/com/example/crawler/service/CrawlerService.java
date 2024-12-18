@@ -2,17 +2,22 @@ package com.example.crawler.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.ibatis.session.SqlSession;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.crawler.dto.CrawlerDTO;
 
 @Service
 public class CrawlerService {
+	@Autowired
+	private SqlSession sqlSession;
 	
     public List<CrawlerDTO> fetchCrawler() {
         List<CrawlerDTO> crawlerList = new ArrayList<>();
@@ -27,7 +32,6 @@ public class CrawlerService {
             for (Element row : topHigh) {
                 Elements columns = row.select("td");
 
-                // 유효한 데이터가 있는 행만 처리
                 if (columns.size() >= 11) {
                     String rank = row.select("td img").attr("src");
                     String name = columns.get(3).text().trim();
@@ -39,7 +43,6 @@ public class CrawlerService {
                     String high = columns.get(9).text().trim();
                     String low = columns.get(10).text().trim();
 
-                    // DTO에 데이터 저장
                     CrawlerDTO dto = new CrawlerDTO();
                     dto.setStockRank(rank);
                     dto.setStockName(name);
@@ -50,7 +53,6 @@ public class CrawlerService {
                     dto.setStockOpen(open);
                     dto.setStockHigh(high);
                     dto.setStockLow(low);
-
                     crawlerList.add(dto);
                 }
             }
@@ -59,4 +61,8 @@ public class CrawlerService {
         }
         return crawlerList;
     }
+    
+    public int insertCrawler(Map<String, Object> params) {
+		return sqlSession.insert("insertCrawler", params);
+	}
 }
